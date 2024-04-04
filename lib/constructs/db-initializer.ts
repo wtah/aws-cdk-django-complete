@@ -20,10 +20,11 @@ export class DBInitializer extends Construct {
         })
 
         const mysqlLayer = new PythonLayerVersion(this, 'mysql-layer', {
-            entry: './lib/layers/mysql',
+            entry: './lib/layers/mysql/',
             compatibleRuntimes: [aws_lambda.Runtime.PYTHON_3_11]
         })
 
+        // -- Defines a Lambda function that initializes the database. --
         const initializerFn = new TriggerFunction(this, 'initializer-fn', {
             runtime: aws_lambda.Runtime.PYTHON_3_11,
             vpc: props.vpc,
@@ -41,6 +42,7 @@ export class DBInitializer extends Construct {
             description: 'DB Initializer',
             logRetention: aws_logs.RetentionDays.ONE_MONTH
         });                 
+
 
         this.function = initializerFn
         this.fnSecurityGroup = initializerSg          

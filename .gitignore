@@ -8,7 +8,6 @@ node_modules
 cdk.out
 
 # Ignore config & cdk context
-config.yaml
 cdk.context.json
 
 # Django & Python

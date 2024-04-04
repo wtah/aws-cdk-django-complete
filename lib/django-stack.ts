@@ -11,14 +11,17 @@ export class DjangoStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props: StackProps, buildConfig: BuildConfig) {
         super(scope, id, props);
 
-     const vpc = new aws_ec2.Vpc(this, 'base-vpc', {
+     const prefix = this.node.tryGetContext('prefix');
+     const environment= prefix == 'prod' ? 'prod' : 'dev';
+
+     const vpc = new aws_ec2.Vpc(this, `${environment}-base-vpc`, {
             ipAddresses: aws_ec2.IpAddresses.cidr("172.20.0.0/16"),
             maxAzs: 2,
         })
 
         vpc.addFlowLog('vpc-flow-logs')
 
-        const vpcSecurityGroup = new aws_ec2.SecurityGroup(this, 'vpc-sg', {
+        const vpcSecurityGroup = new aws_ec2.SecurityGroup(this, `${environment}-vpc-sg`, {
             //securityGroupName: 'app-vpn-sg',
             vpc: vpc,
             //description: 'Allow Client Connections',
@@ -31,7 +34,7 @@ export class DjangoStack extends cdk.Stack {
         vpcSecurityGroup.addIngressRule(vpcSecurityGroup, aws_ec2.Port.allTraffic(), 'Allow All Traffic within SG');
 
         //Create the Client VPN Endpoint with Mutual Authentication
-        const cfnClientVpnEndpoint = new aws_ec2.CfnClientVpnEndpoint(this, 'CfnClientVpnEndpoint', {
+        const cfnClientVpnEndpoint = new aws_ec2.CfnClientVpnEndpoint(this, `${environment}-cfn-client-vpn-endpoint`, {
             authenticationOptions: [{
                 type: 'certificate-authentication',
                 mutualAuthentication: {
@@ -50,7 +53,7 @@ export class DjangoStack extends cdk.Stack {
                 resourceType: 'client-vpn-endpoint',
                 tags: [{
                     key: 'Name',
-                    value: 'vpn-endpoint',
+                    value: `${environment}-vpn-endpoint`,
                 }],
             }],
             dnsServers: ['169.254.169.253', '172.20.0.2'],
@@ -60,7 +63,7 @@ export class DjangoStack extends cdk.Stack {
         });
 
         //Add Authorization Rules to grant access to VPC
-        const demoVpnAuthorizationRule = new aws_ec2.CfnClientVpnAuthorizationRule(this, 'VpnAuthorizationRule', {
+        const demoVpnAuthorizationRule = new aws_ec2.CfnClientVpnAuthorizationRule(this, `${environment}-vpn-authorization-rule`, {
             clientVpnEndpointId: cfnClientVpnEndpoint.ref,
             targetNetworkCidr: vpc.vpcCidrBlock,
             authorizeAllGroups: true
@@ -68,22 +71,26 @@ export class DjangoStack extends cdk.Stack {
 
         //Add Network associations to configure Private subnet routes and associations
         for (const subnet of vpc.privateSubnets) {
-            new aws_ec2.CfnClientVpnTargetNetworkAssociation(this, 'NetworkAssociation_' + subnet, {
+            new aws_ec2.CfnClientVpnTargetNetworkAssociation(this, `${environment}-network-association` + subnet, {
                 clientVpnEndpointId: cfnClientVpnEndpoint.ref,
                 subnetId: subnet.subnetId,
             });
         }
 
 
-        const djangoDB = new DjangoDB(this, 'django-db', {
+        const djangoDB = new DjangoDB(this, `${environment}-django-db`, {
             vpc: vpc,
-            vpcSecurityGroup: vpcSecurityGroup
+            vpcSecurityGroup: vpcSecurityGroup,
+            environment: environment,
+            prefix: prefix
         }, buildConfig)
 
-        new DjangoECS(this, 'django-ecs', {
+        new DjangoECS(this, `${prefix}-django-ecs`, {
             vpc: vpc,
             dbSecurityGroup: djangoDB.vpcSecurityGroup,
-            dbCluster: djangoDB.dbCluster
+            dbCluster: djangoDB.dbCluster,
+            environment: environment,
+            prefix: prefix
         }, buildConfig)
 
         NagSuppressions.addStackSuppressions(this, [

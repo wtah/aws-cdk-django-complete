@@ -7,26 +7,28 @@ import { AwsCustomResource, AwsCustomResourcePolicy } from "aws-cdk-lib/custom-r
 export interface DjangoECSProps {
     readonly vpc: aws_ec2.Vpc;
     readonly dbSecurityGroup: aws_ec2.SecurityGroup;
-    readonly dbCluster: aws_rds.DatabaseCluster
+    readonly dbCluster: aws_rds.DatabaseCluster;
+    readonly environment: string;
+    readonly prefix: string;
 }
 
 export class DjangoECS extends Construct {
     constructor(scope: Construct, id: string, props: DjangoECSProps, buildConfig: BuildConfig) {
         super(scope, id);
 
-        const djangoDomain = 'django.' + buildConfig.Parameters.PERSONAL_HOSTED_ZONE_DOMAIN
+        const djangoDomain = `django.${props.prefix}.` + buildConfig.Parameters.PERSONAL_HOSTED_ZONE_DOMAIN
 
-        const ecsKey = new aws_kms.Key(this, 'ecs-key', {
-            alias: 'ecs-key',
+        const ecsKey = new aws_kms.Key(this, `${props.prefix}-ecs-key`, {
+            alias: `${props.prefix}-ecs-key`,
             enableKeyRotation: true
         })
 
-        const ecsSecurityGroup = new aws_ec2.SecurityGroup(this, 'ecs-security-group', {
+        const ecsSecurityGroup = new aws_ec2.SecurityGroup(this, `${props.prefix}-ecs-security-group`, {
             vpc: props.vpc
         })
         props.dbSecurityGroup.addIngressRule(ecsSecurityGroup, aws_ec2.Port.tcp(3306))
 
-        const ecsStaticBucket = new aws_s3.Bucket(this, 'ecs-static-bucket', {
+        const ecsStaticBucket = new aws_s3.Bucket(this, `${props.prefix}-ecs-static-bucket`, {
             autoDeleteObjects: true,
             removalPolicy: RemovalPolicy.DESTROY,
             blockPublicAccess: aws_s3.BlockPublicAccess.BLOCK_ALL,
@@ -40,11 +42,11 @@ export class DjangoECS extends Construct {
             },
         ])
 
-        const djangoImage = new aws_ecr_assets.DockerImageAsset(this, 'django-image', {
+        const djangoImage = new aws_ecr_assets.DockerImageAsset(this, `${props.prefix}-django-image`, {
             directory: './apps/test-app'
         })
 
-        const ecsCluster = new aws_ecs.Cluster(this, 'ecs-cluster', {
+        const ecsCluster = new aws_ecs.Cluster(this, `${props.prefix}-ecs-cluster`, {
             vpc: props.vpc,
             executeCommandConfiguration: {
                 kmsKey: ecsKey
@@ -60,19 +62,21 @@ export class DjangoECS extends Construct {
             STATIC_BUCKET_NAME: ecsStaticBucket.bucketName,
             DEBUG_FLAG: "False",
             HOST_NAMES: [djangoDomain].join(","),
-            AWS_REGION: Stack.of(this).region
+            AWS_REGION: Stack.of(this).region,
+            PREFIX: props.prefix,
+            ENVIRONMENT: props.environment // dev or prod
         };
-        const ssmParameter = new aws_ssm.StringParameter(this, "ecsTaskParams", {
-            parameterName: "ecsTaskParams",
+        const ssmParameter = new aws_ssm.StringParameter(this, `${props.prefix}-ecsTaskParams`, {
+            parameterName: `${props.prefix}-ecsTaskParams`,
             stringValue: JSON.stringify(djangoEnv),
         });
         const taskParams = {
-            taskParams: "ecsTaskParams",
+            taskParams: `${props.prefix}-ecsTaskParams`,
         };
-        const djangoTaskRole = new aws_iam.Role(this, 'django-task-role', {
+        const djangoTaskRole = new aws_iam.Role(this, `${props.prefix}-django-task-role`, {
             assumedBy: new aws_iam.ServicePrincipal('ecs-tasks.amazonaws.com')
         });
-        djangoTaskRole.addManagedPolicy(new aws_iam.ManagedPolicy(this, 'db-access-policy', {
+        djangoTaskRole.addManagedPolicy(new aws_iam.ManagedPolicy(this, `${props.prefix}-db-access-policy`, {
             statements: [
                 new aws_iam.PolicyStatement({
                     effect: aws_iam.Effect.ALLOW,
@@ -86,7 +90,7 @@ export class DjangoECS extends Construct {
         ecsStaticBucket.grantReadWrite(djangoTaskRole)
         ssmParameter.grantRead(djangoTaskRole)
 
-        const djangoTaskExecutionRole = new aws_iam.Role(this, 'django-execution-role', {
+        const djangoTaskExecutionRole = new aws_iam.Role(this, `${props.prefix}-django-execution-role`, {
             assumedBy: new aws_iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
             managedPolicies: [
                 aws_iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AmazonECSTaskExecutionRolePolicy'),
@@ -99,7 +103,7 @@ export class DjangoECS extends Construct {
             }
         ])
 
-        const taskDefinition = new aws_ecs.FargateTaskDefinition(this, 'django-fargate-taskdef', {
+        const taskDefinition = new aws_ecs.FargateTaskDefinition(this, `${props.prefix}-django-fargate-taskdef`, {
             cpu: 512,
             memoryLimitMiB: 1024,
             executionRole: djangoTaskExecutionRole,
@@ -112,7 +116,7 @@ export class DjangoECS extends Construct {
             }
         ])
         // Standard Django Container
-        taskDefinition.addContainer('django-container', {
+        taskDefinition.addContainer(`${props.prefix}-django-container`, {
             image: aws_ecs.ContainerImage.fromDockerImageAsset(djangoImage),
             environment: taskParams,
             command: ["gunicorn", "-w", "3", "-b", ":8000", "mysite.wsgi:application"],
@@ -133,7 +137,7 @@ export class DjangoECS extends Construct {
         });
 
         // Container to execute one-time migrations
-        taskDefinition.addContainer('django-migrate-container', {
+        taskDefinition.addContainer(`${props.prefix}-django-migrate-container`, {
             image: aws_ecs.ContainerImage.fromDockerImageAsset(djangoImage),
             environment: taskParams,
             command: ["python", "manage.py", "migrate"],
@@ -146,7 +150,7 @@ export class DjangoECS extends Construct {
         });
 
         // Container to execute one-time static files collection to S3
-        taskDefinition.addContainer('django-collectstatic-container', {
+        taskDefinition.addContainer(`${props.prefix}-django-collectstatic-container`, {
             image: aws_ecs.ContainerImage.fromDockerImageAsset(djangoImage),
             environment: taskParams,
             command: ["python", "manage.py", "collectstatic", "--noinput"],
@@ -158,7 +162,7 @@ export class DjangoECS extends Construct {
             })
         });
 
-        const djangoFargateService = new aws_ecs.FargateService(this, 'django-fargate-service', {
+        const djangoFargateService = new aws_ecs.FargateService(this, `${props.prefix}-django-fargate-service`, {
             cluster: ecsCluster,
             taskDefinition: taskDefinition,
             enableExecuteCommand: true,
@@ -173,20 +177,20 @@ export class DjangoECS extends Construct {
         });
 
         // ELB
-        const serverCertificate = new aws_certificatemanager.Certificate(this, 'server-certificate', {
+        const serverCertificate = new aws_certificatemanager.Certificate(this, `${props.prefix}-server-certificate`, {
             domainName: djangoDomain,
-            validation: aws_certificatemanager.CertificateValidation.fromDns(aws_route53.HostedZone.fromHostedZoneAttributes(this, 'server-zone', {
+            validation: aws_certificatemanager.CertificateValidation.fromDns(aws_route53.HostedZone.fromHostedZoneAttributes(this, `${props.prefix}-server-zone`, {
                 hostedZoneId: buildConfig.Parameters.PERSONAL_HOSTED_ZONE_ID,
                 zoneName: buildConfig.Parameters.PERSONAL_HOSTED_ZONE_DOMAIN
             }))
         })
 
-        const lbSg = new aws_ec2.SecurityGroup(this, 'lb-open-sg', {
+        const lbSg = new aws_ec2.SecurityGroup(this, `${props.prefix}-lb-open-sg`, {
             vpc: props.vpc,
             allowAllOutbound: true            
         })
         // Get Cloudfront Prefix Lists from Custom Resource
-        const prefixLists = new AwsCustomResource(this, 'prefixLists', {
+        const prefixLists = new AwsCustomResource(this, `${props.prefix}-prefixLists`, {
             onUpdate: {
                 service: 'EC2',
                 action: 'describeManagedPrefixLists',
@@ -207,14 +211,14 @@ export class DjangoECS extends Construct {
 
         const lbSgImmutable = aws_ec2.SecurityGroup.fromSecurityGroupId(
             this, 
-            'lbSgImmutable', 
+            `${props.prefix}-lbSgImmutable`,
             lbSg.securityGroupId,
             {
                 mutable: false
             }        
         )
 
-        const lb = new aws_elasticloadbalancingv2.ApplicationLoadBalancer(this, 'lb-open', {
+        const lb = new aws_elasticloadbalancingv2.ApplicationLoadBalancer(this, `${props.prefix}-lb-open`, {
             vpc: props.vpc,
             internetFacing: true,
             securityGroup: lbSgImmutable
@@ -228,14 +232,14 @@ export class DjangoECS extends Construct {
 
         ecsSecurityGroup.addIngressRule(lbSg, aws_ec2.Port.allTcp())
 
-        const listener = lb.addListener('listener', {
+        const listener = lb.addListener(`${props.prefix}-listener`, {
             port: 443,
             certificates: [serverCertificate]
         })
 
-        listener.addTargets('ECS', {
+        listener.addTargets(`${props.prefix}-ECS`, {
             targets: [djangoFargateService.loadBalancerTarget({
-                containerName: 'django-container'
+                containerName: `${props.prefix}-django-container`
             })],
             port: 8000,
             healthCheck: {
@@ -260,7 +264,7 @@ export class DjangoECS extends Construct {
         ecsStaticBucket.grantRead(origin_access_identity);
 
         // CLoudfront
-        const cf_distribution = new aws_cloudfront.Distribution(this, "CFDistribution", {
+        const cf_distribution = new aws_cloudfront.Distribution(this, `${props.prefix}-CFDistribution`, {
             defaultBehavior: {
                 origin: elb_origin,
                 cachePolicy: aws_cloudfront.CachePolicy.CACHING_DISABLED,
@@ -293,18 +297,15 @@ export class DjangoECS extends Construct {
             }
         ])
 
-        const hostedZone = aws_route53.HostedZone.fromHostedZoneAttributes(this, 'HostedZone', {
+        const hostedZone = aws_route53.HostedZone.fromHostedZoneAttributes(this, `${props.prefix}-HostedZone`, {
             hostedZoneId: buildConfig.Parameters.PERSONAL_HOSTED_ZONE_ID,
             zoneName: buildConfig.Parameters.PERSONAL_HOSTED_ZONE_DOMAIN
         });
 
-        new aws_route53.ARecord(this, 'CFRecordSet', {
+        new aws_route53.ARecord(this, `${props.prefix}-CFRecordSet`, {
             zone: hostedZone,
             recordName: djangoDomain,
             target: aws_route53.RecordTarget.fromAlias(new aws_route53_targets.CloudFrontTarget(cf_distribution))
         });
-
-
     }
-
 }

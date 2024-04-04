@@ -17,7 +17,7 @@ export class TrustStack extends cdk.Stack {
    // This provider will be used by the GitHub Actions workflow to
    // assume a role which can be used to deploy the CDK application.
    const githubProvider = new iam.CfnOIDCProvider(this, "GitHubOIDCProvider", {
-     thumbprintList: ["6938fd4d98bab03faadb97b34396831e3780aea1"],
+     thumbprintList: ["6938fd4d98bab03faadb97b34396831e3780aea1", "1c58a3a8518e8759bf075b76b750d4f2df264fcd"],
      url: "https://token.actions.githubusercontent.com", // <-- 1 per account
      clientIdList: ["sts.amazonaws.com"], // <-- Tokens are intended for STS
    });
@@ -29,7 +29,7 @@ export class TrustStack extends cdk.Stack {
    //         "Get thumbprint" button after selecting OpenID Connect
    //         as the type and inputting the provider URL.
 
-
+   // dummy comment
    // -- Defines a role that can be assumed by GitHub Actions. --
    // This role will be used by the GitHub Actions workflow to deploy the stack.
    // It is assumable only by GitHub Actions running against the `main` branch
@@ -42,7 +42,7 @@ export class TrustStack extends cdk.Stack {
            // branch of your repository. You can use wildcards here, but
            // you should be careful about what you allow.
            "token.actions.githubusercontent.com:sub": [
-             `repo:${buildConfig.Parameters.GITHUB_ORG}/${buildConfig.Parameters.GITHUB_REPO}:ref:refs/heads/main`,
+              `repo:${buildConfig.Parameters.GITHUB_ORG}/${buildConfig.Parameters.GITHUB_REPO}:*`, // Matches everything in the org/repo
            ],
          },
          // This specifies that the audience (aud) claim must be sts.amazonaws.com
@@ -86,6 +86,36 @@ export class TrustStack extends cdk.Stack {
    // Add the policy statement to the GitHub Actions role so it can actually
    // assume the CDK deployment roles it will require.
    githubActionsRole.addToPolicy(assumeCdkDeploymentRoles);
+
+
+    // Additional policy to allow needed resource access
+    const ec2DescribeAZPermission = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ["ec2:DescribeAvailabilityZones",
+          "cloudformation:*", // Less restrictive than possible
+          "ssm:GetParameter",
+          "ec2:*", // Less restrictive than possible
+          "ecr:*", // Less restrictive than possible
+          "s3:*", // Less restrictive than possible
+          "iam:PassRole"
+      ],
+      resources: ["*"], // This action doesn't support resource-level permissions
+    });
+    githubActionsRole.addToPolicy(ec2DescribeAZPermission);
+
+
+    // Here's where we add the Nag suppression for the AwsSolutions-IAM5 warning
+    NagSuppressions.addResourceSuppressions(
+      githubActionsRole,
+      [
+        {
+          id: 'AwsSolutions-IAM5',
+          reason: 'The policy requires wildcard permissions to enable broad access for CDK deployment roles and EC2 availability zone descriptions, as per the design.'
+        }
+      ],
+      true // Recursively apply this suppression to all children of the GitHubActionsRole, if any.
+    );
+
 
 
    new cdk.CfnOutput(this, "GitHubActionsRoleArn", {

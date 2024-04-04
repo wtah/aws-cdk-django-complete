@@ -1,6 +1,22 @@
-# Sample for a Django Serverless CDK Application using AWS managed services
 
-The purpose of this sample is to demo a serverless CDK stack for a Python [django](https://www.djangoproject.com/) Application that uses Amazon ECS with AWS Fargate, AWS Lambda, Amazon Aurora MySQL-Compatible Edition, Elastic Load Balancing (ELB) and Amazon CloudFront. 
+[![.github/workflows/deploy-prod.yaml](https://github.com/wtah/aws-cdk-django-complete/actions/workflows/deploy-prod.yaml/badge.svg)](https://github.com/wtah/aws-cdk-django-complete/actions/workflows/deploy-prod.yaml)
+
+# Reference Implementation for a Django Application with AWS CDK integrated with CICD via Github Actions and private Subnet Access via AWS Client VPN
+
+The purpose of this repository is to provide a reproducible template to kickstart a serverless CDK stack for a Python [django](https://www.djangoproject.com/) Application that uses Amazon ECS with AWS Fargate, AWS Lambda, Amazon Aurora MySQL-Compatible Edition, Elastic Load Balancing (ELB) and Amazon CloudFront. 
+
+Features:
+- Complete CDK Stack for the following components:
+  - VPC with Private Subnets for application and database
+  - ECS Cluster with Fargate Tasks
+  - Application Load Balancer
+  - Serverless Aurora Database with IAM Authentication
+  - Cloudfront Distribution and S3 Bucket for static files
+  - Lambda Custom Resource for creating the Django IAM Database User
+  - OIDC Integration with Github Actions for CICD
+  - AWS Client VPN for local development in the private subnet
+  - Route53 DNS Records for the Application
+
 
 The sample also uses RDS IAM Authentication for the django Backend to avoid hard-coded credentials in the settings file. The user setup is covered by a Lambda custom resource triggered on creation or changes of the database.
 
@@ -12,7 +28,7 @@ The following diagram shows the high-level architecture for the solution.
 
 ![Django Stack Architecture](docs/django-ecs-stack.png)
 
-This demo consists out of several components:
+This base application consists out of several components:
 
 - A serverless Aurora Database with Mysql compatibility using IAM Authentication
 - AWS Secrets Manager to store the database credentials and metadata (only used for the custom resource on deployment)
@@ -30,7 +46,7 @@ This demo consists out of several components:
 - [Docker](https://docs.docker.com/get-docker/)
 - Existing HostedZone in your Account
 
-**THIS DEMO WAS TESTED IN US-EAST-1 REGION**
+**THIS REPO WAS TESTED IN US-EAST-1 REGION**
 
 # Setup instructions
 
@@ -142,11 +158,18 @@ aws acm import-certificate --certificate fileb://server.crt --private-key fileb:
 aws acm import-certificate --certificate fileb://client1.domain.tld.crt --private-key fileb://client1.domain.tld.key --certificate-chain fileb://ca.crt
 ```
 4. Note the ARN of the certificates and enter them in the config.yaml
-5. Deploy the stack with ```cdk deploy --all```
+5. Deploy the stack with ```cdk deploy DjangoStack```
 6. Download the AWS Client VPN
    1. https://aws.amazon.com/de/vpn/client-vpn-download/
 7. Get the Client Configuration from the Client-VPC Endpoint in the AWS Console
-   1. E.g.https://us-east-1.console.aws.amazon.com/vpc/home?region=us-east-1#ClientVPNEndpoints:
+   1. E.g.https://us-east-1.console.aws.amazon.com/vpc/home?region=us-east-1#ClientVPNEndpoints or
+   ```bash
+   # For the dev database vpc
+   aws ec2 export-client-vpn-client-configuration --client-vpn-endpoint-id dev-cfn-client-vpn-endpoint --output text>dev-django-vpn.ovpn
+   
+    # For the prod database vpc
+   aws ec2 export-client-vpn-client-configuration --client-vpn-endpoint-id dev-cfn-client-vpn-endpoint --output text>dev-django-vpn.ovpn
+   ```
 8. Copy the configuration and append the following lines with the client cert details:
 ```
 cert <your path>/client1.domain.tld.crt
@@ -155,9 +178,19 @@ key <your path/client1.domain.tld.key
 9. Connect to the VPN with the downloaded client and the configuration file
 10. Start developing locally with the private subnet resources
 
-# CICD Pipeline with Gthub Actions
+# CICD Pipeline with Github Actions
 
-In order to enable the CICD integration with Github Actions, you need to deploy 
+In order to enable the CICD integration with Github Actions, you need to deploy the TrustStack which enables the necessary constructs for the OIDC integration with Github actions.
+```bash
+cdk deploy TrustStack
+```
+After a successful deployment note the **TrustStack.GitHubActionsRoleArn**, then go to your Github repository and add the following 2 action variables:
+- AWS_GITHUB_ACTIONS_ROLE: *TrustStack.GitHubActionsRoleArn*
+- AWS_REGION: *your region*
+
+**Done**. Now you can push your changes to the repository and the pipeline will be triggered.
+
+
 
 
 
