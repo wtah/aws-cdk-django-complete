@@ -65,11 +65,11 @@ export class DjangoECS extends Construct {
             AWS_REGION: Stack.of(this).region
         };
         const ssmParameter = new aws_ssm.StringParameter(this, `${props.prefix}-ecsTaskParams`, {
-            parameterName: "ecsTaskParams",
+            parameterName: `${props.prefix}-ecsTaskParams`,
             stringValue: JSON.stringify(djangoEnv),
         });
         const taskParams = {
-            taskParams: "ecsTaskParams",
+            taskParams: `${props.prefix}-ecsTaskParams`,
         };
         const djangoTaskRole = new aws_iam.Role(this, `${props.prefix}-django-task-role`, {
             assumedBy: new aws_iam.ServicePrincipal('ecs-tasks.amazonaws.com')
