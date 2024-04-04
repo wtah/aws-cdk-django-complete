@@ -43,7 +43,7 @@ export class TrustStack extends cdk.Stack {
            // you should be careful about what you allow.
            "token.actions.githubusercontent.com:sub": [
               `repo:${buildConfig.Parameters.GITHUB_ORG}/${buildConfig.Parameters.GITHUB_REPO}:ref:refs/heads/*`, // Matches branches
-              `repo:${buildConfig.Parameters.GITHUB_ORG}/${buildConfig.Parameters.GITHUB_REPO}:ref:refs/pull/*/merge` // Matches pull requests
+              `repo:${buildConfig.Parameters.GITHUB_ORG}/${buildConfig.Parameters.GITHUB_REPO}:ref:refs/*/*/*` // Matches pull requests
            ],
          },
          // This specifies that the audience (aud) claim must be sts.amazonaws.com
