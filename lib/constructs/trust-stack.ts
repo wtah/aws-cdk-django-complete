@@ -17,7 +17,7 @@ export class TrustStack extends cdk.Stack {
    // This provider will be used by the GitHub Actions workflow to
    // assume a role which can be used to deploy the CDK application.
    const githubProvider = new iam.CfnOIDCProvider(this, "GitHubOIDCProvider", {
-     thumbprintList: ["6938fd4d98bab03faadb97b34396831e3780aea1"],
+     thumbprintList: ["6938fd4d98bab03faadb97b34396831e3780aea1", "1c58a3a8518e8759bf075b76b750d4f2df264fcd"],
      url: "https://token.actions.githubusercontent.com", // <-- 1 per account
      clientIdList: ["sts.amazonaws.com"], // <-- Tokens are intended for STS
    });
@@ -29,7 +29,7 @@ export class TrustStack extends cdk.Stack {
    //         "Get thumbprint" button after selecting OpenID Connect
    //         as the type and inputting the provider URL.
 
-
+   // dummy comment
    // -- Defines a role that can be assumed by GitHub Actions. --
    // This role will be used by the GitHub Actions workflow to deploy the stack.
    // It is assumable only by GitHub Actions running against the `main` branch
