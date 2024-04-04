@@ -97,7 +97,8 @@ export class TrustStack extends cdk.Stack {
           "cloudformation:DeleteChangeSet",
           "ssm:GetParameter",
           "ecr:*", // Less restrictive than possible
-          "s3:*" // Less restrictive than possible
+          "s3:*", // Less restrictive than possible
+          "iam:PassRole"
       ],
       resources: ["*"], // This action doesn't support resource-level permissions
     });
