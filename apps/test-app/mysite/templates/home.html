@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<div>This is a django test app on AWS</div>
+    <p>The current stage is {{ glob.stage }} and the current version is {{ glob.version }}</p>
+<img src="{% static 'images/meeting.jpg' %}" alt="My image">
+
+{% endblock content %}
