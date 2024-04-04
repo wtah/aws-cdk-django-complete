@@ -6,12 +6,18 @@
 The purpose of this repository is to provide a reproducible template to kickstart a serverless CDK stack for a Python [django](https://www.djangoproject.com/) Application that uses Amazon ECS with AWS Fargate, AWS Lambda, Amazon Aurora MySQL-Compatible Edition, Elastic Load Balancing (ELB) and Amazon CloudFront. 
 
 Features:
-- Serverless Aurora Database with IAM Authentication
-- Django Application running on ECS Fargate
-- Cloudfront Distribution for Load Balancer and S3 Bucket
-- S3 Bucket for static files
-- Lambda Custom Resource for creating the Django IAM Database User
-- 
+- Complete CDK Stack for the following components:
+  - VPC with Private Subnets
+  - ECS Cluster with Fargate Tasks
+  - Application Load Balancer
+  - Serverless Aurora Database with IAM Authentication
+  - Cloudfront Distribution for Load Balancer and S3 Bucket
+  - S3 Bucket for static files
+  - Lambda Custom Resource for creating the Django IAM Database User
+  - OIDC Integration with Github Actions for CICD
+  - AWS Client VPN for local development in the private subnet
+  - Route53 DNS Records for the Application
+
 
 The sample also uses RDS IAM Authentication for the django Backend to avoid hard-coded credentials in the settings file. The user setup is covered by a Lambda custom resource triggered on creation or changes of the database.
 
@@ -23,7 +29,7 @@ The following diagram shows the high-level architecture for the solution.
 
 ![Django Stack Architecture](docs/django-ecs-stack.png)
 
-This demo consists out of several components:
+This base application consists out of several components:
 
 - A serverless Aurora Database with Mysql compatibility using IAM Authentication
 - AWS Secrets Manager to store the database credentials and metadata (only used for the custom resource on deployment)
@@ -41,7 +47,7 @@ This demo consists out of several components:
 - [Docker](https://docs.docker.com/get-docker/)
 - Existing HostedZone in your Account
 
-**THIS DEMO WAS TESTED IN US-EAST-1 REGION**
+**THIS REPO WAS TESTED IN US-EAST-1 REGION**
 
 # Setup instructions
 
