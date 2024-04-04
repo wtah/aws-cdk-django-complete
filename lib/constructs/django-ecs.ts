@@ -237,7 +237,7 @@ export class DjangoECS extends Construct {
 
         listener.addTargets(`${props.prefix}-ECS`, {
             targets: [djangoFargateService.loadBalancerTarget({
-                containerName: 'django-container'
+                containerName: `${props.prefix}-django-container`
             })],
             port: 8000,
             healthCheck: {
