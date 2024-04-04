@@ -1,3 +1,6 @@
+
+[![.github/workflows/deploy-prod.yaml](https://github.com/wtah/aws-cdk-django-complete/actions/workflows/deploy-prod.yaml/badge.svg)](https://github.com/wtah/aws-cdk-django-complete/actions/workflows/deploy-prod.yaml)
+
 # Sample for a Django Serverless CDK Application using AWS managed services
 
 The purpose of this sample is to demo a serverless CDK stack for a Python [django](https://www.djangoproject.com/) Application that uses Amazon ECS with AWS Fargate, AWS Lambda, Amazon Aurora MySQL-Compatible Edition, Elastic Load Balancing (ELB) and Amazon CloudFront. 
