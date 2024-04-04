@@ -91,7 +91,12 @@ export class TrustStack extends cdk.Stack {
     // Additional policy to allow needed resource access
     const ec2DescribeAZPermission = new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
-      actions: ["ec2:DescribeAvailabilityZones", "cloudformation:DescribeStacks", "ssm:GetParameter", "ecr:DescribeRepositories", "ecr:DescribeImages"],
+      actions: ["ec2:DescribeAvailabilityZones",
+          "cloudformation:DescribeStacks",
+          "ssm:GetParameter",
+          "ecr:DescribeRepositories",
+          "ecr:DescribeImages",
+          "ecr:GetAuthorizationToken"],
       resources: ["*"], // This action doesn't support resource-level permissions
     });
     githubActionsRole.addToPolicy(ec2DescribeAZPermission);
