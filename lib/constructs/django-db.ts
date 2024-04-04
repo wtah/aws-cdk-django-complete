@@ -9,19 +9,24 @@ import {BuildConfig} from "../get-config";
 export interface DjangoDBProps {
     readonly vpc: aws_ec2.Vpc;
     readonly vpcSecurityGroup: aws_ec2.SecurityGroup;
+    readonly environment: string;
+    readonly prefix: string;
 }
 
 export class DjangoDB extends Construct {
     constructor(scope: Construct, id: string, props: DjangoDBProps, buildConfig: BuildConfig) {
         super(scope, id);
 
-        const dbKey = new aws_kms.Key(this, 'django-db-key',
+        const prefix = this.node.tryGetContext('prefix');
+        const environment= prefix == 'prod' ? 'prod' : 'dev';
+
+        const dbKey = new aws_kms.Key(this, `${environment}-django-db-key`,
             {
                 alias: 'django-db-key',
                 enableKeyRotation: true
             })
 
-        const dbCredentials = new aws_rds.DatabaseSecret(this, 'database-credentials', {
+        const dbCredentials = new aws_rds.DatabaseSecret(this, `${props.environment}-database-credentials`, {
             username: 'admin',
 
         })
@@ -32,7 +37,7 @@ export class DjangoDB extends Construct {
             },
         ])
 
-        const dbServerless = new aws_rds.DatabaseCluster(this, 'Database', {
+        const dbServerless = new aws_rds.DatabaseCluster(this, `${props.environment}-database`, {
             engine: aws_rds.DatabaseClusterEngine.auroraMysql({ version: aws_rds.AuroraMysqlEngineVersion.VER_3_03_1 }),
             writer: aws_rds.ClusterInstance.serverlessV2('writer', {
                 allowMajorVersionUpgrade: true,
@@ -42,7 +47,7 @@ export class DjangoDB extends Construct {
             serverlessV2MinCapacity: 0.5,
             serverlessV2MaxCapacity: 2,
             readers: [
-                aws_rds.ClusterInstance.serverlessV2('reader1', {
+                aws_rds.ClusterInstance.serverlessV2(`${props.environment}-reader1`, {
                     scaleWithWriter: true,
                     allowMajorVersionUpgrade: true,
                     enablePerformanceInsights: true,
@@ -77,7 +82,7 @@ export class DjangoDB extends Construct {
             },
         ])
 
-        const initializer = new DBInitializer(this, 'DjangoDBInit', {
+        const initializer = new DBInitializer(this, `${props.environment}-django-db-init`, {
             dbConfigSecret: dbServerless.secret?.secretName!,
             vpc: props.vpc
         })

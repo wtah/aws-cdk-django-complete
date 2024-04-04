@@ -10,6 +10,9 @@ import {TrustStack} from "../lib/constructs/trust-stack";
 const app = new cdk.App();
 
 let buildConfig: BuildConfig = getConfig();
+
+
+
 const accountEnv =
     {
       region: buildConfig.Parameters.REGION,
