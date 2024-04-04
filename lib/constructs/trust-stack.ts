@@ -91,7 +91,7 @@ export class TrustStack extends cdk.Stack {
     // Additional policy to allow DescribeAvailabilityZones, addressing the authorization issue
     const ec2DescribeAZPermission = new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
-      actions: ["ec2:DescribeAvailabilityZones", "cloudformation:DescribeStacks"],
+      actions: ["ec2:DescribeAvailabilityZones", "cloudformation:DescribeStacks", "ssm:GetParameter"],
       resources: ["*"], // This action doesn't support resource-level permissions
     });
     githubActionsRole.addToPolicy(ec2DescribeAZPermission);
