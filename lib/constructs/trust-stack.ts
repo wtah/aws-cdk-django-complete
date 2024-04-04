@@ -46,9 +46,9 @@ export class TrustStack extends cdk.Stack {
          //   ],
          // },
          // This specifies that the audience (aud) claim must be sts.amazonaws.com
-         StringEquals: {
-           "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
-         },
+         // StringEquals: {
+         //   "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
+         // },
        },
        "sts:AssumeRoleWithWebIdentity" // <-- Allows use of OIDC identity
      ),
