@@ -92,9 +92,23 @@ export class TrustStack extends cdk.Stack {
     const ec2DescribeAZPermission = new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       actions: ["ec2:DescribeAvailabilityZones"],
-      resources: [githubActionsRole.roleArn], // This action doesn't support resource-level permissions
+      resources: ["*"], // This action doesn't support resource-level permissions
     });
     githubActionsRole.addToPolicy(ec2DescribeAZPermission);
+
+
+    // Here's where we add the Nag suppression for the AwsSolutions-IAM5 warning
+    NagSuppressions.addResourceSuppressions(
+      githubActionsRole,
+      [
+        {
+          id: 'AwsSolutions-IAM5',
+          reason: 'The policy requires wildcard permissions to enable broad access for CDK deployment roles and EC2 availability zone descriptions, as per the design.'
+        }
+      ],
+      true // Recursively apply this suppression to all children of the GitHubActionsRole, if any.
+    );
+
 
 
    new cdk.CfnOutput(this, "GitHubActionsRoleArn", {
