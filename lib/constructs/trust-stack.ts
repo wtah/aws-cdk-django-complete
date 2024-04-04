@@ -95,6 +95,7 @@ export class TrustStack extends cdk.Stack {
           "cloudformation:DescribeStacks",
           "cloudformation:GetTemplate",
           "cloudformation:DeleteChangeSet",
+          "cloudformation:CreateChangeSet",
           "ssm:GetParameter",
           "ecr:*", // Less restrictive than possible
           "s3:*", // Less restrictive than possible
