@@ -94,10 +94,8 @@ export class TrustStack extends cdk.Stack {
       actions: ["ec2:DescribeAvailabilityZones",
           "cloudformation:DescribeStacks",
           "ssm:GetParameter",
-          "ecr:DescribeRepositories",
-          "ecr:DescribeImages",
-          "ecr:GetAuthorizationToken",
-          "s3:*"
+          "ecr:*", // Less restrictive than possible
+          "s3:*" // Less restrictive than possible
       ],
       resources: ["*"], // This action doesn't support resource-level permissions
     });
