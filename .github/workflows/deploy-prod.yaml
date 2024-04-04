@@ -3,6 +3,10 @@ on:
    branches:
      - main
 
+permissions:
+ id-token: write # Required for GitHub to be able to create a token for you to authenticate with AWS
+ contents: read  # Permits your action to read this repo.
+
 jobs:
   deploy-prod:
     name: Prod

@@ -4,6 +4,10 @@ on:
   pull_request:
     types: [opened, ready_for_review, reopened, synchronize, closed]
 
+permissions:
+ id-token: write # Required for GitHub to be able to create a token for you to authenticate with AWS
+ contents: read  # Permits your action to read this repo.
+
 jobs:
   deploy-demo:
     name: Demo

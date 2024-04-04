@@ -1,16 +1,9 @@
-name: Deploy LambdaStack
+name: Deploy DjangoStack
 
-
-permissions:
- id-token: write # Required for GitHub to be able to create a token for you to authenticate with AWS
- contents: read  # Permits your action to read this repo.
 
 on:
   workflow_call:
     inputs:
-      assume_role_arn:
-        required: true
-        type: string
       env_prefix:
         required: true
         type: string
