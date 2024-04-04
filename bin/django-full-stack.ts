@@ -25,7 +25,8 @@ new TrustStack(app, "TrustStack", {
     env: accountEnv,
 }, buildConfig);
 
-new DjangoStack(app, `${prefix}-DjangoStack`, {
+new DjangoStack(app, `DjangoStack`, {
+    stackName: `${prefix}-django-stack`,
     env: accountEnv,
 }, buildConfig);
 
