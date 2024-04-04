@@ -20,7 +20,7 @@ export class DBInitializer extends Construct {
         })
 
         const mysqlLayer = new PythonLayerVersion(this, 'mysql-layer', {
-            entry: './lib/layers/mysql',
+            entry: './lib/layers/mysql/',
             compatibleRuntimes: [aws_lambda.Runtime.PYTHON_3_11]
         })
 
