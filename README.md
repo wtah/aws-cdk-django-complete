@@ -149,7 +149,14 @@ aws acm import-certificate --certificate fileb://client1.domain.tld.crt --privat
 6. Download the AWS Client VPN
    1. https://aws.amazon.com/de/vpn/client-vpn-download/
 7. Get the Client Configuration from the Client-VPC Endpoint in the AWS Console
-   1. E.g.https://us-east-1.console.aws.amazon.com/vpc/home?region=us-east-1#ClientVPNEndpoints:
+   1. E.g.https://us-east-1.console.aws.amazon.com/vpc/home?region=us-east-1#ClientVPNEndpoints or
+   ```bash
+   # For the dev detabase vpc
+   aws ec2 export-client-vpn-client-configuration --client-vpn-endpoint-id dev-cfn-client-vpn-endpoint --output text>dev-django-vpn.ovpn
+   
+    # For the prod detabase vpc
+   aws ec2 export-client-vpn-client-configuration --client-vpn-endpoint-id dev-cfn-client-vpn-endpoint --output text>dev-django-vpn.ovpn
+   ```
 8. Copy the configuration and append the following lines with the client cert details:
 ```
 cert <your path>/client1.domain.tld.crt

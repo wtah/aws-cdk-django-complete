@@ -19,7 +19,7 @@ export class DjangoECS extends Construct {
         const djangoDomain = `django.${props.prefix}.` + buildConfig.Parameters.PERSONAL_HOSTED_ZONE_DOMAIN
 
         const ecsKey = new aws_kms.Key(this, `${props.prefix}-ecs-key`, {
-            alias: 'ecs-key',
+            alias: `${props.prefix}-ecs-key`,
             enableKeyRotation: true
         })
 
