@@ -64,7 +64,7 @@ export class DjangoECS extends Construct {
             HOST_NAMES: [djangoDomain].join(","),
             AWS_REGION: Stack.of(this).region,
             PREFIX: props.prefix,
-            ENVIRONMENT: props.environment
+            ENVIRONMENT: props.environment // dev or prod
         };
         const ssmParameter = new aws_ssm.StringParameter(this, `${props.prefix}-ecsTaskParams`, {
             parameterName: `${props.prefix}-ecsTaskParams`,
