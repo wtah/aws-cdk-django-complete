@@ -1,0 +1,9 @@
+Parameters:
+  ACCOUNT_ID: "491300543873"
+  REGION: "us-east-1"
+  PERSONAL_HOSTED_ZONE_ID: "Z000441332UOMD20UHL9Z"
+  PERSONAL_HOSTED_ZONE_DOMAIN: "thilohofmeister.com"
+  SERVER_CERT_ARN: "arn:aws:acm:us-east-1:491300543873:certificate/a5ba1d45-7b47-44b3-812b-501e1b1d11d7"
+  CLIENT_CERT_ARN: "arn:aws:acm:us-east-1:491300543873:certificate/349832ea-42de-4134-8cb0-0f528296d53a"
+  GITHUB_ORG: "wtah"
+  GITHUB_REPO: "aws-cdk-django-complete"
