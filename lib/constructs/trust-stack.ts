@@ -37,18 +37,18 @@ export class TrustStack extends cdk.Stack {
      assumedBy: new iam.FederatedPrincipal(
        githubProvider.attrArn,
        {
-         // StringLike: {
-         //   // This specifies that the subscriber (sub) claim must be the main
-         //   // branch of your repository. You can use wildcards here, but
-         //   // you should be careful about what you allow.
-         //   "token.actions.githubusercontent.com:sub": [
-         //     `repo:${buildConfig.Parameters.GITHUB_ORG}/${buildConfig.Parameters.GITHUB_REPO}:ref:refs/heads/main`,
-         //   ],
-         // },
+         StringLike: {
+           // This specifies that the subscriber (sub) claim must be the main
+           // branch of your repository. You can use wildcards here, but
+           // you should be careful about what you allow.
+           "token.actions.githubusercontent.com:sub": [
+             `repo:${buildConfig.Parameters.GITHUB_ORG}/${buildConfig.Parameters.GITHUB_REPO}:ref:refs/heads/*`,
+           ],
+         },
          // This specifies that the audience (aud) claim must be sts.amazonaws.com
-         // StringEquals: {
-         //   "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
-         // },
+         StringEquals: {
+           "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
+         },
        },
        "sts:AssumeRoleWithWebIdentity" // <-- Allows use of OIDC identity
      ),
