@@ -96,7 +96,9 @@ export class TrustStack extends cdk.Stack {
           "ssm:GetParameter",
           "ecr:DescribeRepositories",
           "ecr:DescribeImages",
-          "ecr:GetAuthorizationToken"],
+          "ecr:GetAuthorizationToken",
+          "s3:*"
+      ],
       resources: ["*"], // This action doesn't support resource-level permissions
     });
     githubActionsRole.addToPolicy(ec2DescribeAZPermission);
