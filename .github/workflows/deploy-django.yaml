@@ -5,11 +5,16 @@ permissions:
  id-token: write # Required for GitHub to be able to create a token for you to authenticate with AWS
  contents: read  # Permits your action to read this repo.
 
-
 on:
- push:
-   branches:
-     - main
+  workflow_call:
+    inputs:
+      assume_role_arn:
+        required: true
+        type: string
+      env_prefix:
+        required: true
+        type: string
+
 
 
 jobs:
@@ -35,4 +40,4 @@ jobs:
          role-session-name: "GitHubActions-DeployLayerStack"
 
      - name: Deploy DjangoStack (via CDK)
-       run: yarn cdk deploy DjangoStack --require-approval never
+       run: yarn cdk deploy DjangoStack -c prefix=${{ inputs.env_prefix }} --require-approval never

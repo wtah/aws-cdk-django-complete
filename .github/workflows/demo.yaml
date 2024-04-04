@@ -1,0 +1,13 @@
+name: Demo
+
+on:
+  pull_request:
+    types: [opened, ready_for_review, reopened, synchronize, closed]
+
+jobs:
+  deploy-demo:
+    name: Demo
+    uses: ./.github/workflows/deploy-django.yaml
+    with:
+      env_prefix: demo-${{ github.event.number }}
+    secrets: inherit

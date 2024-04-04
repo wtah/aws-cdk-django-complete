@@ -1,0 +1,12 @@
+on:
+ push:
+   branches:
+     - main
+
+jobs:
+  deploy-prod:
+    name: Prod
+    uses: ./.github/workflows/deploy-django.yaml
+    with:
+      env_prefix: prod
+    secrets: inherit
