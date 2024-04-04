@@ -88,6 +88,15 @@ export class TrustStack extends cdk.Stack {
    githubActionsRole.addToPolicy(assumeCdkDeploymentRoles);
 
 
+    // Additional policy to allow DescribeAvailabilityZones, addressing the authorization issue
+    const ec2DescribeAZPermission = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ["ec2:DescribeAvailabilityZones"],
+      resources: [githubActionsRole.roleArn], // This action doesn't support resource-level permissions
+    });
+    githubActionsRole.addToPolicy(ec2DescribeAZPermission);
+
+
    new cdk.CfnOutput(this, "GitHubActionsRoleArn", {
      value: githubActionsRole.roleArn,
      description: (
