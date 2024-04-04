@@ -17,11 +17,12 @@ import json
 from storages.backends.s3boto3 import S3Boto3Storage
 from django.core.management.utils import get_random_secret_key
 
-prefix = os.environ.get('PREFIX', 'demo')
-environment = os.environ.get('ENVIRONMENT', 'dev')
+# print all environment variables
+for key in os.environ.keys():
+    print(f"{key} = {os.environ[key]}")
 
 ssm = boto3.client('ssm')
-taskParameter = json.loads(ssm.get_parameter(Name=prefix+'-ecsTaskParams')['Parameter']['Value'])
+taskParameter = json.loads(ssm.get_parameter(Name=os.environ.get('taskParams'))['Parameter']['Value'])
 
 DB_HOST = taskParameter['DB_HOST']
 DB_PORT = taskParameter['DB_PORT']
