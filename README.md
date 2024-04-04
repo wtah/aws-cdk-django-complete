@@ -7,12 +7,11 @@ The purpose of this repository is to provide a reproducible template to kickstar
 
 Features:
 - Complete CDK Stack for the following components:
-  - VPC with Private Subnets
+  - VPC with Private Subnets for application and database
   - ECS Cluster with Fargate Tasks
   - Application Load Balancer
   - Serverless Aurora Database with IAM Authentication
-  - Cloudfront Distribution for Load Balancer and S3 Bucket
-  - S3 Bucket for static files
+  - Cloudfront Distribution and S3 Bucket for static files
   - Lambda Custom Resource for creating the Django IAM Database User
   - OIDC Integration with Github Actions for CICD
   - AWS Client VPN for local development in the private subnet

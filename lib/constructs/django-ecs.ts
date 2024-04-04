@@ -62,7 +62,9 @@ export class DjangoECS extends Construct {
             STATIC_BUCKET_NAME: ecsStaticBucket.bucketName,
             DEBUG_FLAG: "False",
             HOST_NAMES: [djangoDomain].join(","),
-            AWS_REGION: Stack.of(this).region
+            AWS_REGION: Stack.of(this).region,
+            PREFIX: props.prefix,
+            ENVIRONMENT: props.environment
         };
         const ssmParameter = new aws_ssm.StringParameter(this, `${props.prefix}-ecsTaskParams`, {
             parameterName: `${props.prefix}-ecsTaskParams`,
