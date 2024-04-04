@@ -1,9 +1,17 @@
 
 [![.github/workflows/deploy-prod.yaml](https://github.com/wtah/aws-cdk-django-complete/actions/workflows/deploy-prod.yaml/badge.svg)](https://github.com/wtah/aws-cdk-django-complete/actions/workflows/deploy-prod.yaml)
 
-# Sample for a Django Serverless CDK Application using AWS managed services
+# Reference Implementation for a Django Application with AWS CDK integrated with CICD via Github Actions and private Subnet Access via AWS Client VPN
 
-The purpose of this sample is to demo a serverless CDK stack for a Python [django](https://www.djangoproject.com/) Application that uses Amazon ECS with AWS Fargate, AWS Lambda, Amazon Aurora MySQL-Compatible Edition, Elastic Load Balancing (ELB) and Amazon CloudFront. 
+The purpose of this repository is to provide a reproducible template to kickstart a serverless CDK stack for a Python [django](https://www.djangoproject.com/) Application that uses Amazon ECS with AWS Fargate, AWS Lambda, Amazon Aurora MySQL-Compatible Edition, Elastic Load Balancing (ELB) and Amazon CloudFront. 
+
+Features:
+- Serverless Aurora Database with IAM Authentication
+- Django Application running on ECS Fargate
+- Cloudfront Distribution for Load Balancer and S3 Bucket
+- S3 Bucket for static files
+- Lambda Custom Resource for creating the Django IAM Database User
+- 
 
 The sample also uses RDS IAM Authentication for the django Backend to avoid hard-coded credentials in the settings file. The user setup is covered by a Lambda custom resource triggered on creation or changes of the database.
 
@@ -151,10 +159,10 @@ aws acm import-certificate --certificate fileb://client1.domain.tld.crt --privat
 7. Get the Client Configuration from the Client-VPC Endpoint in the AWS Console
    1. E.g.https://us-east-1.console.aws.amazon.com/vpc/home?region=us-east-1#ClientVPNEndpoints or
    ```bash
-   # For the dev detabase vpc
+   # For the dev database vpc
    aws ec2 export-client-vpn-client-configuration --client-vpn-endpoint-id dev-cfn-client-vpn-endpoint --output text>dev-django-vpn.ovpn
    
-    # For the prod detabase vpc
+    # For the prod database vpc
    aws ec2 export-client-vpn-client-configuration --client-vpn-endpoint-id dev-cfn-client-vpn-endpoint --output text>dev-django-vpn.ovpn
    ```
 8. Copy the configuration and append the following lines with the client cert details:

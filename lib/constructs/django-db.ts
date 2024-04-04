@@ -22,7 +22,7 @@ export class DjangoDB extends Construct {
 
         const dbKey = new aws_kms.Key(this, `${environment}-django-db-key`,
             {
-                alias: 'django-db-key',
+                alias: `${environment}-django-db-key`,
                 enableKeyRotation: true
             })
 
