@@ -92,13 +92,7 @@ export class TrustStack extends cdk.Stack {
     const ec2DescribeAZPermission = new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       actions: ["ec2:DescribeAvailabilityZones",
-          "cloudformation:DescribeStacks",
-          "cloudformation:GetTemplate",
-          "cloudformation:DeleteChangeSet",
-          "cloudformation:CreateChangeSet",
-          "cloudformation:DescribeChangeSet",
-          "cloudformation:ExecuteChangeSet",
-          "cloudformation:DescribeStackEvents",
+          "cloudformation:*", // Less restrictive than possible
           "ssm:GetParameter",
           "ec2:*", // Less restrictive than possible
           "ecr:*", // Less restrictive than possible
