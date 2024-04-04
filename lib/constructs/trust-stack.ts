@@ -93,6 +93,7 @@ export class TrustStack extends cdk.Stack {
       effect: iam.Effect.ALLOW,
       actions: ["ec2:DescribeAvailabilityZones",
           "cloudformation:DescribeStacks",
+          "cloudformation:GetTemplate",
           "ssm:GetParameter",
           "ecr:*", // Less restrictive than possible
           "s3:*" // Less restrictive than possible
