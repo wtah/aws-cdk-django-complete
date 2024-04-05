@@ -20,12 +20,12 @@ export class DjangoStack extends cdk.Stack {
             natGateways: 0,
             subnetConfiguration: [
                 {
-                    cidrMask: 24,
+                    cidrMask: 16,
                     name: 'public',
                     subnetType: aws_ec2.SubnetType.PUBLIC,
                 },
                 {
-                    cidrMask: 24,
+                    cidrMask: 16,
                     name: 'private',
                     subnetType: aws_ec2.SubnetType.PRIVATE_WITH_EGRESS,
                 },
