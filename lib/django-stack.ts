@@ -17,6 +17,13 @@ export class DjangoStack extends cdk.Stack {
      const vpc = new aws_ec2.Vpc(this, `${environment}-base-vpc`, {
             ipAddresses: aws_ec2.IpAddresses.cidr("172.20.0.0/16"),
             maxAzs: 2,
+            subnetConfiguration: [
+                {
+                    cidrMask: 24, // Define your CIDR mask for isolated subnets
+                    name: 'isolated', // Name prefix for the isolated subnets
+                    subnetType: aws_ec2.SubnetType.PRIVATE_ISOLATED, // Specify subnet type as ISOLATED
+                },
+            ],
         })
 
         vpc.addFlowLog('vpc-flow-logs')
