@@ -17,6 +17,19 @@ export class DjangoStack extends cdk.Stack {
      const vpc = new aws_ec2.Vpc(this, `${environment}-base-vpc`, {
             ipAddresses: aws_ec2.IpAddresses.cidr("172.20.0.0/16"),
             maxAzs: 2,
+            natGateways: 0,
+            subnetConfiguration: [
+                {
+                    cidrMask: 24,
+                    name: 'public',
+                    subnetType: aws_ec2.SubnetType.PUBLIC,
+                },
+                {
+                    cidrMask: 24,
+                    name: 'private',
+                    subnetType: aws_ec2.SubnetType.PRIVATE_WITH_EGRESS,
+                },
+            ],
         })
 
         //
