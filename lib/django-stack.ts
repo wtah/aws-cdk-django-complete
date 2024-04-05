@@ -26,6 +26,8 @@ export class DjangoStack extends cdk.Stack {
             ],
         })
 
+        //
+
         vpc.addFlowLog('vpc-flow-logs')
 
         const vpcSecurityGroup = new aws_ec2.SecurityGroup(this, `${environment}-vpc-sg`, {
