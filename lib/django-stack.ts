@@ -79,7 +79,7 @@ export class DjangoStack extends cdk.Stack {
         });
 
         //Add Network associations to configure Private subnet routes and associations
-        for (const subnet of vpc.privateSubnets) {
+        for (const subnet of vpc.isolatedSubnets) {
             new aws_ec2.CfnClientVpnTargetNetworkAssociation(this, `${environment}-network-association` + subnet, {
                 clientVpnEndpointId: cfnClientVpnEndpoint.ref,
                 subnetId: subnet.subnetId,
