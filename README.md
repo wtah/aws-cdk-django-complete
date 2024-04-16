@@ -168,7 +168,7 @@ aws acm import-certificate --certificate fileb://client1.domain.tld.crt --privat
    aws ec2 export-client-vpn-client-configuration --client-vpn-endpoint-id dev-cfn-client-vpn-endpoint --output text>dev-django-vpn.ovpn
    
     # For the prod database vpc
-   aws ec2 export-client-vpn-client-configuration --client-vpn-endpoint-id dev-cfn-client-vpn-endpoint --output text>dev-django-vpn.ovpn
+   aws ec2 export-client-vpn-client-configuration --client-vpn-endpoint-id prod-cfn-client-vpn-endpoint --output text>prod-django-vpn.ovpn
    ```
 8. Copy the configuration and append the following lines with the client cert details:
 ```
